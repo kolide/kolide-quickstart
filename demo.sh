@@ -6,6 +6,13 @@ function print_etc_hosts_instructions() {
     printf "printf \"\\\\n127.0.0.1 $CN\" | sudo tee -a /etc/hosts > /dev/null\n"
 }
 
+function compose_basename() {
+    # docker-compose names containers, networks, etc. based on the basename of
+    # the directory with _ and - removed. This function generates that
+    # basename.
+    echo $(basename $(pwd) | tr -d '_-')
+}
+
 function mac_enrollment_package() {
     PKGNAME=kolide-enroll
     PKGVERSION=1.0.0
@@ -122,7 +129,7 @@ cat <<- EOF > docker_hosts/kolide.flags
 --logger_tls_period=10
 EOF
 
-    kolide_container_ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kolidedemo_kolide_1)"
+    kolide_container_ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(compose_basename)_kolide_1)"
 
     KOLIDE_OSQUERY_VERSION=latest \
         KOLIDE_HOST_HOSTNAME="${CN}" \
@@ -136,7 +143,7 @@ function get_cn() {
 
 function wait_mysql() {
     echo 'Waiting for MySQL to accept connections...\c'
-    network=$(basename $(pwd) | tr -d '_-')_default
+    network=$(compose_basename)_default
 
     for i in $(seq 1 50);
     do
