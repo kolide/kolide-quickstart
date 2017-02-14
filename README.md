@@ -6,7 +6,7 @@ The scripts in the demo assume you already have registered for Kolide. You can s
 We're also available to help with this script, or deploying Kolide in your environment.
 You can contact us by email at support@kolide.co or by joining #kolide on the [osquery slack team](https://osquery-slack.herokuapp.com/).
 
-If you would like to contribute to the script, you can open an [Issue](https://github.com/kolide/kolide-demo/issues) or [Pull Request](https://github.com/kolide/kolide-demo/pulls).
+If you would like to contribute to the script, you can open an [Issue](https://github.com/kolide/kolide-quickstart/issues) or [Pull Request](https://github.com/kolide/kolide-quickstart/pulls).
 
 ## Dependencies
 
@@ -41,7 +41,7 @@ After setup is completed, run the following to get 10 containerized hosts added 
 ### Start Kolide (and Dependencies)
 ```bash
 git clone https://github.com/kolide/kolide-quickstart.git # or download and unzip https://github.com/kolide/kolide-quickstart/archive/master.zip
-cd kolide-demo
+cd kolide-quickstart
 ./demo.sh up
 ```
 
