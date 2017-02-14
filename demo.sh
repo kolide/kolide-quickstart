@@ -124,7 +124,8 @@ function up() {
     wait_mysql
 
     echo "Kolide server should now be accessible at https://127.0.0.1:8412 or https://${CN}:8412."
-    echo "Note that the self-signed SSL certificate will generate a warning in the browser."
+    echo "Note that a self-signed SSL certificate will generate a warning in the browser."
+    echo "To allow other hosts to enroll, you may want to create a DNS entry mapping $CN to the IP of this host."
 }
 
 function down() {
