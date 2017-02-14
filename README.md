@@ -30,10 +30,10 @@ cd kolide-quickstart
 
 At this point you can navigate to [https://localhost:8412](https://localhost:8412) (or the IP/DNS name of the server running Kolide) to complete setup.
 
-To add simulated hosts, first copy your Enroll Secret (see [Retrieve Enroll Secret](#retrieve-enroll-secret)). Now run the following to get 10 hosts enrolled into Kolide:
+After setup is completed, run the following to get 10 containerized hosts added to Kolide:
 
 ```bash
-./demo.sh add_hosts 10 <paste enroll secret>
+./demo.sh add_hosts 10
 ```
 
 ## Usage
@@ -73,23 +73,12 @@ This will terminate the containers, and remove the MySQL data and generated TLS 
 
 This Kolide demo comes with various methods for adding hosts. It can easily be tested with containerized fake hosts in Docker, but testing with real hosts will help you understand the true value Kolide can bring to your infrastructure.
 
-### Retrieve Enroll Secret
-
-Adding hosts requires retrieving the host enroll secret from the Kolide application. To do so, navigate to Hosts  (`/hosts/manage`) and click the "Add New Host" button in the upper-right corner. At the bottom of this dialog, you can reveal or copy the enroll secret. In the screenshot below, relevant sections of the UI are highlighted in red.
-
-<img width="1348" alt="Retrieving enroll secret" src="https://cloud.githubusercontent.com/assets/575602/22949370/e56458e4-f2b6-11e6-8c0d-78d47548ce00.png">
-
 ### Add Docker-based Hosts
 
 These Docker-based hosts can be added immediately with no additional setup. Because the containers are all built from the same image, they will return similar results for most queries. To enroll docker-based hosts:
 
 ```bash
-./demo.sh add_hosts <number of hosts> <enroll secret>
-```
-
-Example:
-```bash
-./demo.sh add_hosts 10 u5M9Y4T7u78rNHPI+dwEDXAC7XqPcnfx
+./demo.sh add_hosts <number of hosts>
 ```
 
 You can run the command multiple times to scale the number of enrolled osqueryd containers up or down.
@@ -99,12 +88,7 @@ You can run the command multiple times to scale the number of enrolled osqueryd 
 This demo can generate an installer (`.pkg`) that will configure a macOS osquery installation to work with the Kolide server. To build this package:
 
 ```bash
-./demo.sh enroll mac <enroll secret>
-```
-
-Example:
-```bash
-./demo.sh enroll mac u5M9Y4T7u78rNHPI+dwEDXAC7XqPcnfx
+./demo.sh enroll mac
 ```
 
 The generated installer will be located in `out/kolide-enroll-1.0.0.pkg`.
