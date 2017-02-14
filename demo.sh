@@ -7,15 +7,14 @@ function mac_enrollment_package() {
 
     pkgroot="enrollment/mac/root"
     ENROLL_SECRET=$1
+    CN=$(get_cn)
     if [ -z $ENROLL_SECRET ]; then
         echo "Please provide an enroll secret to be used by osquery."
-        echo "You can find find out the enroll secret by going to "
-        echo "and provide the secret as the first argument to "
+        echo "You can find find out the enroll secret by going to https://${CN}:8412/hosts/manage"
+        echo "and clicking Add Hosts on the top right side of the page."
         echo "./demo.sh enroll mac MY_ENROLL_SECRET"
         exit 1
     fi
-    
-    CN=$(get_cn)
 
 cat <<- EOF > enrollment/mac/root/etc/osquery/kolide.flags
 --force=true
