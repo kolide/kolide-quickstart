@@ -3,4 +3,7 @@ server.crt
 server.key
 out/
 enrollment/mac/root/etc/osquery
+docker_hosts
+osquery_status
+osquery_result
 mysqldata/
