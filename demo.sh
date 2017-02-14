@@ -11,7 +11,7 @@ function mac_enrollment_package() {
     if [ -z $ENROLL_SECRET ]; then
         echo "Please provide an enroll secret to be used by osquery."
         echo "You can find find out the enroll secret by going to https://${CN}:8412/hosts/manage"
-        echo "and clicking Add Hosts on the top right side of the page."
+        echo "and clicking \"Add New Host\" on the top right side of the page."
         echo "./demo.sh enroll mac MY_ENROLL_SECRET"
         exit 1
     fi
@@ -69,8 +69,61 @@ function enrollment() {
     esac
 }
 
+function add_docker_hosts() {
+    CN=$(get_cn)
+
+    total_hosts=$1
+    ENROLL_SECRET=$2
+    if [ -z $ENROLL_SECRET ]; then
+        echo "Please provide an enroll secret to be used by osquery."
+        echo "You can find find the enroll secret by going to https://${CN}:8412/hosts/manage"
+        echo "and clicking \"Add New Host\" on the top right side of the page."
+        echo "./demo.sh add_hosts 5 MY_ENROLL_SECRET"
+        exit 1
+    fi
+
+    mkdir -p docker_hosts
+    cp server.crt docker_hosts/server.crt
+    echo $ENROLL_SECRET > "docker_hosts/kolide_secret"
+cat <<- EOF > docker_hosts/kolide.flags
+--force=true
+--host_identifier=hostname
+--verbose=true
+--debug
+--tls_dump=true
+
+--tls_hostname=${CN}:8412
+--tls_server_certs=/etc/osquery/kolide.crt
+--enroll_secret_path=/etc/osquery/kolide_secret
+
+--enroll_tls_endpoint=/api/v1/osquery/enroll
+
+--config_plugin=tls
+--config_tls_endpoint=/api/v1/osquery/config
+--config_tls_refresh=10
+
+--disable_distributed=false
+--distributed_plugin=tls
+--distributed_interval=10
+--distributed_tls_max_attempts=3
+--distributed_tls_read_endpoint=/api/v1/osquery/distributed/read
+--distributed_tls_write_endpoint=/api/v1/osquery/distributed/write
+
+--logger_plugin=tls
+--logger_tls_endpoint=/api/v1/osquery/log
+--logger_tls_period=10
+EOF
+
+    kolide_container_ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kolidedemo_kolide_1)"
+
+    KOLIDE_OSQUERY_VERSION=latest \
+        KOLIDE_HOST_HOSTNAME="${CN}" \
+        KOLIDE_HOST_IP="$kolide_container_ip" \
+        docker-compose scale "ubuntu14-osquery=$total_hosts"
+}
+
 function get_cn() {
-    docker run -v $(pwd):/certs kolide/openssl x509 -noout -subject -in /certs/server.crt | sed -e 's/^subject.*CN=\([a-zA-Z0-9\.\-]*\).*$/\1/'
+    docker run --rm -v $(pwd):/certs kolide/openssl x509 -noout -subject -in /certs/server.crt | sed -e 's/^subject.*CN=\([a-zA-Z0-9\.\-]*\).*$/\1/'
 }
 
 function wait_mysql() {
@@ -98,7 +151,7 @@ function up() {
 
     # create a self signed cert if the user has not provided one.
     if [ ! -f server.key ]; then
-        DEFAULT_CN='localhost'
+        DEFAULT_CN='kolide'
         read -p "Enter CN for self-signed SSL certificate [default '$DEFAULT_CN']: " CN
         CN=${CN:-$DEFAULT_CN}
 
@@ -112,7 +165,9 @@ function up() {
         CN=$(get_cn)
     fi
 
-    docker-compose up -d
+    KOLIDE_HOST_HOSTNAME=unused \
+        KOLIDE_HOST_IP=unused \
+        docker-compose up -d kolide
     wait_mysql
 
     echo "Kolide server should now be accessible at https://127.0.0.1:8412 or https://${CN}:8412."
@@ -124,9 +179,17 @@ function down() {
 }
 
 function reset() {
-    docker-compose stop && docker-compose rm -f
+    KOLIDE_HOST_HOSTNAME=unused \
+        KOLIDE_HOST_IP=unused \
+        docker-compose stop
+
+    KOLIDE_HOST_HOSTNAME=unused \
+        KOLIDE_HOST_IP=unused \
+    docker-compose rm -f
+
     echo "Removing generated certs"
     rm server.key server.crt
+
     echo "Removing mysql data"
     rm -r mysqldata
 }
@@ -159,6 +222,11 @@ case $1 in
     reset)
         reset
         ;;
+
+    add_hosts)
+        add_docker_hosts $2 $3
+        ;;
+
     *)
         usage
         ;;

@@ -36,3 +36,18 @@ services:
       - .:/tmp
     ports:
       - "8412:8412"
+
+
+  ubuntu14-osquery:
+    image: "kolide/osquery:${KOLIDE_OSQUERY_VERSION}"
+    volumes:
+      - ./docker_hosts/server.crt:/etc/osquery/kolide.crt
+      - ./docker_hosts/kolide.flags:/etc/osquery/kolide.flags
+      - ./docker_hosts/kolide_secret:/etc/osquery/kolide_secret
+    extra_hosts:
+      - "${KOLIDE_HOST_HOSTNAME}:${KOLIDE_HOST_IP}"
+    command: osqueryd --flagfile=/etc/osquery/kolide.flags
+    ulimits:
+      core:
+        hard:  1000000000
+        soft:  1000000000
