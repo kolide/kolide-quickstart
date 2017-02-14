@@ -2,6 +2,12 @@
 
 The scripts and config files in this repository will enable you to quickly get a demo Kolide installation up and running. If you would like to try Kolide without setting up a production testing environment, this demo is for you. For guidance on installing a production Kolide environment, please see the [infrastructure documentation](https://docs.kolide.co/kolide/current/infrastructure/index.html).
 
+The scripts in the demo assume you already have registered for Kolide. You can sign up for Kolide on our [website](https://kolide.co/).
+We're also available to help with this script, or deploying Kolide in your environment.
+You can contact us by email at support@kolide.co or by joining #kolide on the [osquery slack team](https://osquery-slack.herokuapp.com/).
+
+If you would like to contribute to the script, you can open an [Issue](https://github.com/kolide/kolide-demo/issues) or [Pull Request](https://github.com/kolide/kolide-demo/pulls).
+
 ## Dependencies
 
 -  Bash compatible shell with standard unix commands
