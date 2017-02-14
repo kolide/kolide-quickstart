@@ -219,6 +219,8 @@ function usage() {
     echo "    reset Reset all keys, containers, and MySQL data"
     echo "    enroll <platform> <secret> create osquery configuration package for your platform"
     echo "    enroll supported platform values: mac"
+    echo "    add_hosts <number of hosts> <secret> Enroll demo osqueryd linux hosts."
+    echo "    add_hosts uses a dockerized version of osqueryd to add some hosts to kolide."
 }
 
 case $1 in
