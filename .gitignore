@@ -1,3 +1,6 @@
+.DS_Store
 server.crt
 server.key
+out/
+enrollment/mac/root/etc/osquery
 mysqldata/

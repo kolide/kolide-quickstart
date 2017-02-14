@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[[ $3 != "/" ]] && exit 0
+
+/bin/launchctl unload /Library/LaunchDaemons/co.kolide.osquery.enroll.plist
+/bin/launchctl load /Library/LaunchDaemons/co.kolide.osquery.enroll.plist
+
+exit 0

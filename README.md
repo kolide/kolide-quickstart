@@ -69,3 +69,15 @@ When completed, the configuration should look like this:
 ### Viewing Emails
 
 Mailhog starts a UI available at port `8025` on your docker host ([http://localhost:8025](http://localhost:8025) if you are on the docker host) for viewing the emails "sent" through its SMTP server. If email is properly configured, you should see a test message from Kolide in this UI.
+
+### Osquery Enrollment packages
+
+If you wish to enroll other hosts to kolide, the demo script can create an enrollment package which you can deploy together with the osquery packages.
+First, [downoad and install](https://osquery.io/downloads/) the latest version of osquery.
+Next, run `./demo.sh enroll platform secret`, replacing `platform` with your OS distribution and `secret` with the Enroll secret value from kolide.
+Example with macOS package:
+```
+./demo.sh enroll mac oWdk+ub4BxVffVOgxrNOI18qfpZZtGFm
+```
+
+Currently we allow creating osquery enrollment packages for macOS, but are working to provide debian and RHEL scripts shortly.

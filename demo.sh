@@ -1,5 +1,74 @@
 #!/bin/sh
 
+function mac_enrollment_package() {
+    PKGNAME=kolide-enroll
+    PKGVERSION=1.0.0
+    PKGID=co.kolide.osquery.enroll
+
+    pkgroot="enrollment/mac/root"
+    ENROLL_SECRET=$1
+    CN=$(get_cn)
+    if [ -z $ENROLL_SECRET ]; then
+        echo "Please provide an enroll secret to be used by osquery."
+        echo "You can find find out the enroll secret by going to https://${CN}:8412/hosts/manage"
+        echo "and clicking Add Hosts on the top right side of the page."
+        echo "./demo.sh enroll mac MY_ENROLL_SECRET"
+        exit 1
+    fi
+
+    mkdir -p enrollment/mac/root/etc/osquery
+    cat <<- EOF > enrollment/mac/root/etc/osquery/kolide.flags
+--force=true
+--host_identifier=hostname
+--verbose=true
+--debug
+--tls_dump=true
+
+--tls_hostname=${CN}:8412
+--tls_server_certs=/etc/osquery/kolide.crt
+--enroll_secret_path=/etc/osquery/kolide_secret
+
+--enroll_tls_endpoint=/api/v1/osquery/enroll
+
+--config_plugin=tls
+--config_tls_endpoint=/api/v1/osquery/config
+--config_tls_refresh=10
+
+--disable_distributed=false
+--distributed_plugin=tls
+--distributed_interval=10
+--distributed_tls_max_attempts=3
+--distributed_tls_read_endpoint=/api/v1/osquery/distributed/read
+--distributed_tls_write_endpoint=/api/v1/osquery/distributed/write
+
+--logger_plugin=tls
+--logger_tls_endpoint=/api/v1/osquery/log
+--logger_tls_period=10
+EOF
+
+    mkdir -p "$pkgroot/etc/osquery"
+    mkdir -p out
+    echo $ENROLL_SECRET > "$pkgroot/etc/osquery/kolide_secret"
+    cp server.crt "$pkgroot/etc/osquery/kolide.crt"
+	pkgbuild --root $pkgroot \
+        --scripts "enrollment/mac/scripts" \
+        --identifier ${PKGID} \
+        --version ${PKGVERSION} out/${PKGNAME}-${PKGVERSION}.pkg
+}
+
+function enrollment() {
+    platform="$1"
+    secret="$2"
+    case $platform in
+    mac)
+        mac_enrollment_package $secret
+        ;;
+    *)
+        usage
+        ;;
+    esac
+}
+
 function get_cn() {
     docker run -v $(pwd):/certs kolide/openssl x509 -noout -subject -in /certs/server.crt | sed -e 's/^subject.*CN=\([a-zA-Z0-9\.\-]*\).*$/\1/'
 }
@@ -70,6 +139,8 @@ function usage() {
     echo "    up    up will generate a self signed certificate by default"
     echo "    down  Shut down the demo Kolide instance and dependencies"
     echo "    reset Reset all keys, containers, and MySQL data"
+    echo "    enroll <platform> <secret> create osquery configuration package for your platform"
+    echo "    enroll supported platform values: mac"
 }
 
 case $1 in
@@ -79,6 +150,10 @@ case $1 in
 
     down)
         down
+        ;;
+
+    enroll)
+        enrollment $2 $3
         ;;
 
     reset)
