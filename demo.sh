@@ -65,7 +65,7 @@ function reset() {
 function usage() {
     echo "usage: ./demo.sh <subcommand>\n"
     echo "subcommands:"
-    echo "    up <path to TLS key> <path to TLS certificate>"
+    echo "    up [path to TLS key] [path to TLS certificate]"
     echo "    up    Bring up the demo Kolide instance and dependencies"
     echo "    up    up will generate a self signed certificate by default"
     echo "    down  Shut down the demo Kolide instance and dependencies"
