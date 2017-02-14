@@ -139,6 +139,8 @@ function usage() {
     echo "    up    up will generate a self signed certificate by default"
     echo "    down  Shut down the demo Kolide instance and dependencies"
     echo "    reset Reset all keys, containers, and MySQL data"
+    echo "    enroll <platform> <secret> create osquery configuration package for your platform"
+    echo "    enroll supported platform values: mac"
 }
 
 case $1 in
