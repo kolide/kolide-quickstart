@@ -24,7 +24,7 @@ cat <<- EOF > enrollment/mac/root/etc/osquery/kolide.flags
 --debug
 --tls_dump=true
 
---tls_hostname=${CN}
+--tls_hostname=${CN}:8412
 --tls_server_certs=/etc/osquery/kolide.crt
 --enroll_secret_path=/etc/osquery/kolide_secret
 
