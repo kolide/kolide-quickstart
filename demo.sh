@@ -16,7 +16,8 @@ function mac_enrollment_package() {
         exit 1
     fi
 
-cat <<- EOF > enrollment/mac/root/etc/osquery/kolide.flags
+    mkdir -p enrollment/mac/root/etc/osquery
+    cat <<- EOF > enrollment/mac/root/etc/osquery/kolide.flags
 --force=true
 --host_identifier=hostname
 --verbose=true
