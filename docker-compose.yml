@@ -39,7 +39,7 @@ services:
 
 
   ubuntu14-osquery:
-    image: "kolide/osquery:${KOLIDE_OSQUERY_VERSION}"
+    image: "kolide/osquery:latest"
     volumes:
       - ./docker_hosts/server.crt:/etc/osquery/kolide.crt
       - ./docker_hosts/kolide.flags:/etc/osquery/kolide.flags

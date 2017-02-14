@@ -131,8 +131,7 @@ EOF
 
     kolide_container_ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(compose_basename)_kolide_1)"
 
-    KOLIDE_OSQUERY_VERSION=latest \
-        KOLIDE_HOST_HOSTNAME="${CN}" \
+    KOLIDE_HOST_HOSTNAME="${CN}" \
         KOLIDE_HOST_IP="$kolide_container_ip" \
         docker-compose scale "ubuntu14-osquery=$total_hosts"
 }
@@ -220,6 +219,8 @@ function usage() {
     echo "    reset Reset all keys, containers, and MySQL data"
     echo "    enroll <platform> <secret> create osquery configuration package for your platform"
     echo "    enroll supported platform values: mac"
+    echo "    add_hosts <number of hosts> <secret> Enroll demo osqueryd linux hosts."
+    echo "    add_hosts uses a dockerized version of osqueryd to add some hosts to kolide."
 }
 
 case $1 in

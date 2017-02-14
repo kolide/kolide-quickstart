@@ -48,6 +48,22 @@ This will terminate the containers running Kolide and its dependencies, but data
 
 This will terminate the containers, and remove the MySQL data and generated TLS certificate. Use `./demo.sh up` to start again from scratch.
 
+### Adding hosts to kolide.
+
+You can try kolide immediately by enrolling a dockerized version of osqueryd into kolide.
+
+```bash
+./demo.sh add_hosts <number of hosts> <enroll secret>
+```
+
+Example:
+```bash
+./demo.sh add_hosts 10 u5M9Y4T7u78rNHPI+dwEDXAC7XqPcnfx
+```
+
+You can run the command multiple times to scale the number of enrolled osqueryd containers up or down.
+
+
 ## Testing with Email (Optional)
 
 Email setup is not required to demo Kolide. For those who would like to demo Kolide with email, `./demo.sh up` starts a Mailhog container that facilitates this. 
@@ -81,3 +97,5 @@ Example with macOS package:
 ```
 
 Currently we allow creating osquery enrollment packages for macOS, but are working to provide debian and RHEL scripts shortly.
+
+
