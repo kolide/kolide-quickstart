@@ -20,6 +20,8 @@ cd kolide-demo
 
 On the first run, a self-signed SSL certificate will be generated to be used with your trial instance of Kolide. Please enter a CN for this certificate that osquery hosts will be able to use to connect.
 
+When startup completes successfully, a message will be printed with a link to the Kolide instance. At this URL you will be walked through licensing and final setup.
+
 ### Stop Kolide (and Dependencies)
 
 ```bash
@@ -34,4 +36,26 @@ This will terminate the containers running Kolide and its dependencies, but data
 ./demo.sh reset
 ```
 
-This will terminate the containers, and remove the MySQL data and generated SSL certificate. Use `./demo.sh` to start again from scratch.
+This will terminate the containers, and remove the MySQL data and generated SSL certificate. Use `./demo.sh up` to start again from scratch.
+
+## Testing with Email (Optional)
+
+Email setup is not required to demo Kolide. For those who would like to demo Kolide with email, `./demo.sh up` starts a Mailhog container that facilitates this. 
+
+### Set Up Email
+
+To configure Kolide with this demo email server:
+
+1. In Kolide, navigate to Admin -> App Settings (`/admin/settings`).
+2. Make up a Sender Address (eg. `kolide@yourdomain.com`).
+2. Enter SMTP server `mailhog` and port `1025`.
+3. Set Authentication Type to `None`.
+4. Click "Update Settings"
+
+When completed, the configuration should look like this:
+
+<img width="802" alt="screen shot 2017-02-13 at 7 32 24 pm" src="https://cloud.githubusercontent.com/assets/575602/22914173/ff30949c-f223-11e6-8f3f-27675d6dbedb.png">
+
+### Viewing Emails
+
+Mailhog starts a UI available at port `8025` on your docker host ([http://localhost:8025](http://localhost:8025) if you are on the docker host) for viewing the emails "sent" through its SMTP server. If email is properly configured, you should see a test message from Kolide in this UI.
