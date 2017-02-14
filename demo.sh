@@ -127,7 +127,7 @@ function get_cn() {
 }
 
 function get_enroll_secret() {
-    enroll_secret=$(docker run --rm -it --network=kolidebootstrap_default mysql:5.7 mysql -h mysql -u kolide --password=kolide -e 'select osquery_enroll_secret from app_configs' --batch kolide | tail -1)
+    enroll_secret=$(docker run --rm -it --network=$(compose_basename)_default mysql:5.7 mysql -h mysql -u kolide --password=kolide -e 'select osquery_enroll_secret from app_configs' --batch kolide | tail -1)
     if [ $? -ne 0 ] || [ -z $enroll_secret ]; then
         echo "Error: Could not retrieve enroll secret. Exiting."
         exit 1
