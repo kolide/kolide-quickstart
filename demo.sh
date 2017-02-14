@@ -19,6 +19,15 @@ function wait_mysql() {
 }
 
 function up() {
+    # copy user provided key and cert.
+    key=$1
+    cert=$2
+    if [ ! -z $key ] && [ ! -z $cert ]; then
+        cp "$key" server.key
+        cp "$cert" server.crt
+    fi
+
+    # create a self signed cert if the user has not provided one.
     if [ ! -f server.key ]; then
         DEFAULT_CN='localhost'
         read -p "Enter CN for self-signed SSL certificate [default '$DEFAULT_CN']: " CN
@@ -56,14 +65,16 @@ function reset() {
 function usage() {
     echo "usage: ./demo.sh <subcommand>\n"
     echo "subcommands:"
+    echo "    up [path to TLS key] [path to TLS certificate]"
     echo "    up    Bring up the demo Kolide instance and dependencies"
+    echo "    up    up will generate a self signed certificate by default"
     echo "    down  Shut down the demo Kolide instance and dependencies"
     echo "    reset Reset all keys, containers, and MySQL data"
 }
 
 case $1 in
     up)
-        up
+        up $2 $3
         ;;
 
     down)

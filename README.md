@@ -24,7 +24,11 @@ cd kolide-demo
 ./demo.sh up
 ```
 
-On the first run, a self-signed SSL certificate will be generated to be used with your trial instance of Kolide. Please enter a CN for this certificate that osquery hosts will be able to use to connect.
+On the first run, a self-signed TLS certificate will be generated to be used with your trial instance of Kolide. Please enter a CN for this certificate that osquery hosts will be able to use to connect.
+If you already have a trusted TLS certificate, you can provide it in this step.
+```
+./demo.sh /path/to/server.key /path/to/server.crt
+```
 
 When startup completes successfully, a message will be printed with a link to the Kolide instance. At this URL you will be walked through licensing and final setup.
 
@@ -42,7 +46,7 @@ This will terminate the containers running Kolide and its dependencies, but data
 ./demo.sh reset
 ```
 
-This will terminate the containers, and remove the MySQL data and generated SSL certificate. Use `./demo.sh up` to start again from scratch.
+This will terminate the containers, and remove the MySQL data and generated TLS certificate. Use `./demo.sh up` to start again from scratch.
 
 ## Testing with Email (Optional)
 
