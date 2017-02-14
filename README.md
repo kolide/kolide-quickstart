@@ -11,15 +11,36 @@ If you would like to contribute to the script, you can open an [Issue](https://g
 ## Dependencies
 
 -  Bash compatible shell with standard unix commands
+-  Git, or a way to download and unzip these scripts
 -  [Docker](https://docs.docker.com/engine/installation/)
 
 All other necessary dependencies will be installed via Docker by the scripts in this repository.
+
+## tl;dr
+
+While you wait for the following commands to complete, you may want to [register for a Kolide license](https://www.kolide.co/register). You'll need your license to complete setup.
+
+You can copy/paste the following into your shell in order to get Kolide ready to go. More on each of these commands is provided below.
+
+```bash
+git clone https://github.com/kolide/kolide-quickstart.git
+cd kolide-quickstart
+./demo.sh up # You will be prompted for input here
+```
+
+At this point you can navigate to [https://localhost:8412](https://localhost:8412) (or the IP/DNS name of the server running Kolide) to complete setup.
+
+To add simulated hosts, first copy your Enroll Secret (see [Retrieve Enroll Secret](#retrieve-enroll-secret)). Now run the following to get 10 hosts enrolled into Kolide:
+
+```bash
+./demo.sh add_hosts 10 <paste enroll secret>
+```
 
 ## Usage
 
 ### Start Kolide (and Dependencies)
 ```bash
-git clone https://github.com/kolide/kolide-demo.git # or download and unzip https://github.com/kolide/kolide-demo/archive/master.zip
+git clone https://github.com/kolide/kolide-quickstart.git # or download and unzip https://github.com/kolide/kolide-quickstart/archive/master.zip
 cd kolide-demo
 ./demo.sh up
 ```
