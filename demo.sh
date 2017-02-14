@@ -21,13 +21,6 @@ function mac_enrollment_package() {
     pkgroot="enrollment/mac/root"
     ENROLL_SECRET=$1
     CN=$(get_cn)
-    if [ -z $ENROLL_SECRET ]; then
-        echo "Please provide an enroll secret to be used by osquery."
-        echo "You can find find out the enroll secret by going to https://${CN}:8412/hosts/manage"
-        echo "and clicking \"Add New Host\" on the top right side of the page."
-        echo "./demo.sh enroll mac MY_ENROLL_SECRET"
-        exit 1
-    fi
 
     mkdir -p enrollment/mac/root/etc/osquery
     cat <<- EOF > enrollment/mac/root/etc/osquery/kolide.flags
@@ -73,7 +66,7 @@ EOF
 
 function enrollment() {
     platform="$1"
-    secret="$2"
+    secret=$(get_enroll_secret)
     case $platform in
     mac)
         mac_enrollment_package $secret
@@ -88,14 +81,7 @@ function add_docker_hosts() {
     CN=$(get_cn)
 
     total_hosts=$1
-    ENROLL_SECRET=$2
-    if [ -z $ENROLL_SECRET ]; then
-        echo "Please provide an enroll secret to be used by osquery."
-        echo "You can find find the enroll secret by going to https://${CN}:8412/hosts/manage"
-        echo "and clicking \"Add New Host\" on the top right side of the page."
-        echo "./demo.sh add_hosts 5 MY_ENROLL_SECRET"
-        exit 1
-    fi
+    ENROLL_SECRET=$(get_enroll_secret)
 
     mkdir -p docker_hosts
     cp server.crt docker_hosts/server.crt
@@ -138,6 +124,15 @@ EOF
 
 function get_cn() {
     docker run --rm -v $(pwd):/certs kolide/openssl x509 -noout -subject -in /certs/server.crt | sed -e 's/^subject.*CN=\([a-zA-Z0-9\.\-]*\).*$/\1/'
+}
+
+function get_enroll_secret() {
+    enroll_secret=$(docker run --rm -it --network=kolidebootstrap_default mysql:5.7 mysql -h mysql -u kolide --password=kolide -e 'select osquery_enroll_secret from app_configs' --batch kolide | tail -1)
+    if [ $? -ne 0 ] || [ -z $enroll_secret ]; then
+        echo "Error: Could not retrieve enroll secret. Exiting."
+        exit 1
+    fi
+    echo $enroll_secret
 }
 
 function wait_mysql() {
@@ -217,9 +212,9 @@ function usage() {
     echo "    up    up will generate a self signed certificate by default"
     echo "    down  Shut down the demo Kolide instance and dependencies"
     echo "    reset Reset all keys, containers, and MySQL data"
-    echo "    enroll <platform> <secret> create osquery configuration package for your platform"
+    echo "    enroll <platform> create osquery configuration package for your platform"
     echo "    enroll supported platform values: mac"
-    echo "    add_hosts <number of hosts> <secret> Enroll demo osqueryd linux hosts."
+    echo "    add_hosts <number of hosts> Enroll demo osqueryd linux hosts."
     echo "    add_hosts uses a dockerized version of osqueryd to add some hosts to kolide."
 }
 
