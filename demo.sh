@@ -11,7 +11,7 @@ function mac_enrollment_package() {
     if [ -z $ENROLL_SECRET ]; then
         echo "Please provide an enroll secret to be used by osquery."
         echo "You can find find out the enroll secret by going to https://${CN}:8412/hosts/manage"
-        echo "and clicking Add Hosts on the top right side of the page."
+        echo "and clicking \"Add New Host\" on the top right side of the page."
         echo "./demo.sh enroll mac MY_ENROLL_SECRET"
         exit 1
     fi
@@ -70,17 +70,18 @@ function enrollment() {
 }
 
 function add_docker_hosts() {
+    CN=$(get_cn)
+
     total_hosts=$1
     ENROLL_SECRET=$2
     if [ -z $ENROLL_SECRET ]; then
         echo "Please provide an enroll secret to be used by osquery."
-        echo "You can find find out the enroll secret by going to "
-        echo "and provide the secret as the first argument to "
+        echo "You can find find the enroll secret by going to https://${CN}:8412/hosts/manage"
+        echo "and clicking \"Add New Host\" on the top right side of the page."
         echo "./demo.sh add_hosts 5 MY_ENROLL_SECRET"
         exit 1
     fi
 
-    CN=$(get_cn)
     mkdir -p docker_hosts
     cp server.crt docker_hosts/server.crt
     echo $ENROLL_SECRET > "docker_hosts/kolide_secret"
