@@ -131,8 +131,7 @@ EOF
 
     kolide_container_ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(compose_basename)_kolide_1)"
 
-    KOLIDE_OSQUERY_VERSION=latest \
-        KOLIDE_HOST_HOSTNAME="${CN}" \
+    KOLIDE_HOST_HOSTNAME="${CN}" \
         KOLIDE_HOST_IP="$kolide_container_ip" \
         docker-compose scale "ubuntu14-osquery=$total_hosts"
 }
