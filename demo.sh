@@ -79,7 +79,7 @@ function add_docker_hosts() {
         echo "./demo.sh add_hosts 5 MY_ENROLL_SECRET"
         exit 1
     fi
-    
+
     CN=$(get_cn)
     mkdir -p docker_hosts
     cp server.crt docker_hosts/server.crt
@@ -114,11 +114,6 @@ cat <<- EOF > docker_hosts/kolide.flags
 EOF
 
     kolide_container_ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kolidedemo_kolide_1)"
-
-    KOLIDE_OSQUERY_VERSION=latest \
-        KOLIDE_HOST_HOSTNAME="${CN}" \
-        KOLIDE_HOST_IP="$kolide_container_ip" \
-        docker-compose up -d ubuntu14-osquery
 
     KOLIDE_OSQUERY_VERSION=latest \
         KOLIDE_HOST_HOSTNAME="${CN}" \
@@ -169,7 +164,9 @@ function up() {
         CN=$(get_cn)
     fi
 
-    docker-compose up -d kolide
+    KOLIDE_HOST_HOSTNAME=unused \
+        KOLIDE_HOST_IP=unused \
+        docker-compose up -d kolide
     wait_mysql
 
     echo "Kolide server should now be accessible at https://127.0.0.1:8412 or https://${CN}:8412."
@@ -181,9 +178,17 @@ function down() {
 }
 
 function reset() {
-    docker-compose stop && docker-compose rm -f
+    KOLIDE_HOST_HOSTNAME=unused \
+        KOLIDE_HOST_IP=unused \
+        docker-compose stop
+
+    KOLIDE_HOST_HOSTNAME=unused \
+        KOLIDE_HOST_IP=unused \
+    docker-compose rm -f
+
     echo "Removing generated certs"
     rm server.key server.crt
+
     echo "Removing mysql data"
     rm -r mysqldata
 }
