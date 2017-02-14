@@ -169,7 +169,7 @@ function up() {
         CN=$(get_cn)
     fi
 
-    docker-compose up -d
+    docker-compose up -d kolide
     wait_mysql
 
     echo "Kolide server should now be accessible at https://127.0.0.1:8412 or https://${CN}:8412."
@@ -186,8 +186,6 @@ function reset() {
     rm server.key server.crt
     echo "Removing mysql data"
     rm -r mysqldata
-    echo "removing enrolled docker hosts"
-    docker ps |grep osquery |awk '{print $1}' |xargs -I {} docker rm -f {}
 }
 
 function usage() {
