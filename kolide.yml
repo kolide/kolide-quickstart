@@ -1,0 +1,13 @@
+mysql:
+  address: mysql:3306
+  database: kolide
+  username: kolide
+  password: kolide
+redis:
+  address: redis:6379
+server:
+  address: 0.0.0.0:8412
+  cert: /tmp/server.crt
+  key: /tmp/server.key
+logging:
+  json: true
