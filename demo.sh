@@ -1,5 +1,11 @@
 #!/bin/sh
 
+function print_etc_hosts_instructions() {
+    CN=$1
+    echo "If you would like to run the package on the local machine you may need to add $CN to your hosts file. To do so run the following:"
+    printf "printf \"\\\\n127.0.0.1 $CN\" | sudo tee -a /etc/hosts > /dev/null\n"
+}
+
 function mac_enrollment_package() {
     PKGNAME=kolide-enroll
     PKGVERSION=1.0.0
@@ -54,6 +60,8 @@ EOF
         --scripts "enrollment/mac/scripts" \
         --identifier ${PKGID} \
         --version ${PKGVERSION} out/${PKGNAME}-${PKGVERSION}.pkg
+
+    print_etc_hosts_instructions $CN
 }
 
 function enrollment() {
