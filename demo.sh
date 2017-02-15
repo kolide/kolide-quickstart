@@ -13,17 +13,10 @@ function compose_basename() {
     echo $(basename $(pwd) | tr -d '_-')
 }
 
-function mac_enrollment_package() {
-    PKGNAME=kolide-enroll
-    PKGVERSION=1.0.0
-    PKGID=co.kolide.osquery.enroll
-
-    pkgroot="enrollment/mac/root"
-    ENROLL_SECRET=$1
-    CN=$(get_cn)
-
-    mkdir -p enrollment/mac/root/etc/osquery
-    cat <<- EOF > enrollment/mac/root/etc/osquery/kolide.flags
+function dump_flags() {
+    destination=$1
+    CN=$2
+    cat <<- EOF > $destination
 --force=true
 --host_identifier=hostname
 --verbose=true
@@ -51,6 +44,59 @@ function mac_enrollment_package() {
 --logger_tls_endpoint=/api/v1/osquery/log
 --logger_tls_period=10
 EOF
+}
+
+function temp_linux_package_script() {
+PKGVERSION=1.0.0
+PKGNAME="enroll-kolide"
+cat <<- EOF > /tmp/build_linux_pkgs.sh
+
+fpm -s dir -t deb --deb-no-default-config-files -n "${PKGNAME}" -v ${PKGVERSION} /pkgroot/etc/=/etc
+
+fpm -s dir -t rpm -n "enroll-kolide" -v "${PKGVERSION}" /pkgroot/etc/=/etc
+
+mv enroll* /out
+EOF
+}
+
+function linux_system_package() {
+    pkgroot="enrollment/linux/pkgroot"
+    ENROLL_SECRET=$1
+    CN=$(get_cn)
+	mkdir -p out
+    mkdir -p "$pkgroot/etc/osquery"
+
+    dump_flags "$pkgroot/etc/osquery/kolide.flags" $CN
+    echo $ENROLL_SECRET > "$pkgroot/etc/osquery/kolide_secret"
+    cp server.crt "$pkgroot/etc/osquery/kolide.crt"
+
+    temp_linux_package_script
+    docker pull kolide/fpm:latest
+	docker run --rm -it \
+        -v ${PWD}/enrollment/linux/pkgroot:/pkgroot \
+        -v ${PWD}/out:/out \
+        -v /tmp/build_linux_pkgs.sh:/build_linux_pkgs \
+       kolide/fpm /bin/bash /build_linux_pkgs
+}
+
+function mac_enrollment_package() {
+    PKGNAME=kolide-enroll
+    PKGVERSION=1.0.0
+    PKGID=co.kolide.osquery.enroll
+
+    pkgroot="enrollment/mac/root"
+    ENROLL_SECRET=$1
+    CN=$(get_cn)
+    if [ -z $ENROLL_SECRET ]; then
+        echo "Please provide an enroll secret to be used by osquery."
+        echo "You can find find out the enroll secret by going to https://${CN}:8412/hosts/manage"
+        echo "and clicking Add Hosts on the top right side of the page."
+        echo "./demo.sh enroll mac MY_ENROLL_SECRET"
+        exit 1
+    fi
+
+    mkdir -p enrollment/mac/root/etc/osquery
+    dump_flags "enrollment/mac/root/etc/osquery/kolide.flags" $CN
 
     mkdir -p "$pkgroot/etc/osquery"
     mkdir -p out
@@ -71,6 +117,11 @@ function enrollment() {
     mac)
         mac_enrollment_package $secret
         ;;
+
+    linux)
+        linux_system_package $secret
+        ;;
+
     *)
         usage
         ;;
