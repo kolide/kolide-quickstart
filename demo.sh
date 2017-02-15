@@ -13,6 +13,10 @@ function compose_basename() {
     echo $(basename $(pwd) | tr -d '_-')
 }
 
+function compose_network() {
+    echo $(compose_basename)_default
+}
+
 function mac_enrollment_package() {
     PKGNAME=kolide-enroll
     PKGVERSION=1.0.0
@@ -126,42 +130,83 @@ function get_cn() {
     docker run --rm -v $(pwd):/certs kolide/openssl x509 -noout -subject -in /certs/server.crt | sed -e 's/^subject.*CN=\([a-zA-Z0-9\.\-]*\).*$/\1/'
 }
 
+function upload_license() {
+    license=$1
+    out=$(docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k https://kolide:8412/api/v1/license --data \
+           "{\"license\":\"$license\"}")
+    if echo $out | grep -i error; then
+        echo "Error: License upload failed: $out. Exiting." >&2
+        exit 1
+    fi
+}
+
+function perform_setup() {
+    out=$(docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k https://kolide:8412/api/v1/setup --data \
+           '{"kolide_server_url":"https://kolide:8412","org_info":{"org_name":"KolideQuick"},"admin":{"admin":true,"email":"quickstart@kolide.com","password":"admin123#","password_confirmation":"admin123#","username":"admin"}}')
+    if echo $out | grep -i error; then
+        echo "Error: License upload failed: $out. Exiting." >&2
+        exit 1
+    fi
+}
+
 function get_enroll_secret() {
-    enroll_secret=$(docker run --rm -it --network=$(compose_basename)_default mysql:5.7 mysql -h mysql -u kolide --password=kolide -e 'select osquery_enroll_secret from app_configs' --batch kolide | tail -1)
+    enroll_secret=$(docker run --rm -it --network=$(compose_network) mysql:5.7 mysql -h mysql -u kolide --password=kolide -e 'select osquery_enroll_secret from app_configs' --batch kolide | tail -1)
     if [ $? -ne 0 ] || [ -z $enroll_secret ]; then
-        echo "Error: Could not retrieve enroll secret. Exiting."
+        echo "Error: Could not retrieve enroll secret. Exiting." >&2
         exit 1
     fi
     echo $enroll_secret
 }
 
+function wait_kolide() {
+    echo 'Waiting for Kolide server to accept connections...\c'
+    for i in $(seq 1 50);
+    do
+        docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k -I https://kolide:8412 > /dev/null
+        if [ $? -eq 0 ]; then
+            echo
+            return
+        fi
+        echo '.\c'
+    done
+    echo "Error: Kolide failed to start up. Exiting." >&2
+    exit 1
+}
+
 function wait_mysql() {
     echo 'Waiting for MySQL to accept connections...\c'
-    network=$(compose_basename)_default
 
     for i in $(seq 1 50);
     do
-        docker run -it --network=$network mysql:5.7 mysqladmin ping -h mysql -u kolide --password=kolide > /dev/null \
-            && break
+        docker run --rm -it --network=$(compose_network) mysql:5.7 mysqladmin ping -h mysql -u kolide --password=kolide > /dev/null
+        if [ $? -eq 0 ]; then
+            echo
+            return
+        fi
         echo '.\c'
     done
 
-    echo
+    echo "Error: MySQL failed to start up. Exiting." >&2
+    exit 1
 }
 
 function up() {
-    # copy user provided key and cert.
-    key=$1
-    cert=$2
-    if [ ! -z $key ] && [ ! -z $cert ]; then
-        cp "$key" server.key
-        cp "$cert" server.crt
+    if [ "$1" != "simple" ]; then
+        # copy user provided key and cert.
+        key=$1
+        cert=$2
+        if [ ! -z $key ] && [ ! -z $cert ]; then
+            cp "$key" server.key
+            cp "$cert" server.crt
+        fi
     fi
 
     # create a self signed cert if the user has not provided one.
     if [ ! -f server.key ]; then
         DEFAULT_CN='kolide'
-        read -p "Enter CN for self-signed SSL certificate [default '$DEFAULT_CN']: " CN
+        if [ "$1" != "simple" ]; then
+            read -p "Enter CN for self-signed SSL certificate [default '$DEFAULT_CN']: " CN
+        fi
         CN=${CN:-$DEFAULT_CN}
 
         # Create self-signed SSL cert with no passphrase
@@ -177,7 +222,16 @@ function up() {
     KOLIDE_HOST_HOSTNAME=unused \
         KOLIDE_HOST_IP=unused \
         docker-compose up -d kolide
+
     wait_mysql
+    wait_kolide
+
+    if [ "$1" == "simple" ]; then
+        echo "Finalizing Kolide setup..."
+        upload_license $2
+        perform_setup
+        echo "Setup complete. Please log in with username 'admin', password 'admin123#'"
+    fi
 
     echo "Kolide server should now be accessible at https://127.0.0.1:8412 or https://${CN}:8412."
     echo "Note that a self-signed SSL certificate will generate a warning in the browser."
@@ -185,7 +239,9 @@ function up() {
 }
 
 function down() {
-    docker-compose stop
+    KOLIDE_HOST_HOSTNAME=unused \
+        KOLIDE_HOST_IP=unused \
+        docker-compose stop
 }
 
 function reset() {
@@ -195,27 +251,35 @@ function reset() {
 
     KOLIDE_HOST_HOSTNAME=unused \
         KOLIDE_HOST_IP=unused \
-    docker-compose rm -f
+        docker-compose rm -f
 
     echo "Removing generated certs"
-    rm server.key server.crt
+    rm -f server.key server.crt
 
     echo "Removing mysql data"
-    rm -r mysqldata
+    rm -rf mysqldata
 }
 
 function usage() {
     echo "usage: ./demo.sh <subcommand>\n"
     echo "subcommands:"
-    echo "    up [path to TLS key] [path to TLS certificate]"
-    echo "    up    Bring up the demo Kolide instance and dependencies"
-    echo "    up    up will generate a self signed certificate by default"
-    echo "    down  Shut down the demo Kolide instance and dependencies"
-    echo "    reset Reset all keys, containers, and MySQL data"
-    echo "    enroll <platform> create osquery configuration package for your platform"
-    echo "    enroll supported platform values: mac"
-    echo "    add_hosts <number of hosts> Enroll demo osqueryd linux hosts."
-    echo "    add_hosts uses a dockerized version of osqueryd to add some hosts to kolide."
+    echo "    up simple <your license string>"
+    echo "         Start the demo Kolide instance and dependencies, generating"
+    echo "         self-signed certs and automating the entire setup process."
+    echo "    up"
+    echo "         Start the demo Kolide instance and dependencies, generating"
+    echo "         self-signed certs".
+    echo "    up <path to TLS key> <path to TLS certificate>"
+    echo "         Start the demo Kolide instance and dependencies with the provided certs."
+    echo "    down"
+    echo "         Shut down the demo Kolide instance and dependencies."
+    echo "    reset"
+    echo "        Reset all keys, containers, and MySQL data."
+    echo "    enroll <platform>"
+    echo "        Create osquery configuration package for your platform."
+    echo "        Supported platform values: mac"
+    echo "    add_hosts <number of hosts>"
+    echo "        Enroll demo osqueryd linux hosts."
 }
 
 case $1 in
