@@ -205,17 +205,20 @@ function reset() {
 }
 
 function usage() {
-    echo "usage: ./demo.sh <subcommand>\n"
-    echo "subcommands:"
-    echo "    up [path to TLS key] [path to TLS certificate]"
-    echo "    up    Bring up the demo Kolide instance and dependencies"
-    echo "    up    up will generate a self signed certificate by default"
-    echo "    down  Shut down the demo Kolide instance and dependencies"
-    echo "    reset Reset all keys, containers, and MySQL data"
-    echo "    enroll <platform> create osquery configuration package for your platform"
-    echo "    enroll supported platform values: mac"
-    echo "    add_hosts <number of hosts> Enroll demo osqueryd linux hosts."
-    echo "    add_hosts uses a dockerized version of osqueryd to add some hosts to kolide."
+    echo "usage: $0 <subcommand>\n"
+    echo "subcommands:\n"
+    echo "    up <path to TLS key> <path to TLS certificate>"
+    echo "            Bring up the demo Kolide instance and dependencies"
+    echo "            up will generate a self signed certificate by default\n"
+    echo "    down"
+    echo "            Shut down the demo Kolide instance and dependencies\n"
+    echo "    reset"
+    echo "            Reset all keys, containers, and MySQL data\n"
+    echo "    add_hosts <number of hosts>"
+    echo "            Use a dockerized version of osqueryd to add hosts to Kolide\n"
+    echo "    enroll <platform>"
+    echo "            Create osquery configuration package for your platform"
+    echo "            Supported platform values: mac\n"
 }
 
 case $1 in
