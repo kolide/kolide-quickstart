@@ -1,4 +1,6 @@
 #!/bin/sh
+set -eo pipefail
+IFS=$'\n\t'
 
 function print_etc_hosts_instructions() {
     CN=$1
@@ -141,7 +143,7 @@ function wait_mysql() {
 
     for i in $(seq 1 50);
     do
-        docker run -it --network=$network mysql:5.7 mysqladmin ping -h mysql -u kolide --password=kolide > /dev/null \
+        docker run -it --rm --network=$network mysql:5.7 mysqladmin ping -h mysql -u kolide --password=kolide > /dev/null \
             && break
         echo '.\c'
     done
