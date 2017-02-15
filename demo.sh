@@ -282,6 +282,9 @@ function usage() {
     echo "        Enroll demo osqueryd linux hosts."
 }
 
+docker pull kolide/kolide
+docker pull kolide/openssl
+
 case $1 in
     up)
         up $2 $3
