@@ -18,7 +18,7 @@ All other necessary dependencies will be installed via Docker by the scripts in 
 
 ## Quickest Setup
 
-You can copy/paste the following into your shell in order to get Kolide ready to go. Please replace `<your license string>` with your actual license string. If you have not already, please [register for a Kolide license](https://www.kolide.co/register). The [Kolide license page](https://www.kolide.co/account/kolide/product-and-license) will also provide you with these commands and the appropriate license string filled in.
+You can copy/paste the following into your shell in order to get Kolide ready to go. Replace `<your license string>` with your actual license string. If you have not already, please [register for a Kolide license](https://www.kolide.co/register). The [Kolide license page](https://www.kolide.co/account/kolide/product-and-license) will also provide you with these commands and the appropriate license string filled in.
 
 ```bash
 git clone https://github.com/kolide/kolide-quickstart.git
@@ -27,7 +27,7 @@ cd kolide-quickstart
 ./demo.sh add_hosts 10 # Will add 10 containerized hosts to your installation
 ```
 
-At this point you can navigate to [https://localhost:8412](https://localhost:8412) (or the IP/DNS name of the server running Kolide) to complete setup.
+At this point you can navigate to [https://localhost:8412](https://localhost:8412) (or the IP/DNS name of the server running Kolide) and log in with the credentials supplied in the output of the above script.
 
 More advanced setup is explained below.
 
