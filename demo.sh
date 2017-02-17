@@ -1,4 +1,6 @@
 #!/bin/sh
+set -eo pipefail
+IFS=$'\n\t'
 
 function print_etc_hosts_instructions() {
     CN=$1
