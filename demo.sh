@@ -17,6 +17,11 @@ function compose_network() {
     echo $(compose_basename)_default
 }
 
+function initialize_data() {
+    mkdir -p mysqldata
+    chmod -R 777 mysqldata/
+}
+
 function mac_enrollment_package() {
     PKGNAME=kolide-enroll
     PKGVERSION=1.0.0
@@ -191,6 +196,8 @@ function wait_mysql() {
 }
 
 function up() {
+    initialize_data
+
     if [ "$1" != "simple" ]; then
         # copy user provided key and cert.
         key=$1

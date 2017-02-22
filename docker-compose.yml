@@ -9,7 +9,7 @@ services:
       MYSQL_USER: kolide
       MYSQL_PASSWORD: kolide
     volumes:
-      - .:/tmp
+      - ./mysqldata:/tmp
     expose:
       - "3306"
 
