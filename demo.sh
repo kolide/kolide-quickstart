@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 function print_etc_hosts_instructions() {
     CN=$1
