@@ -53,8 +53,6 @@ func Exec() {
 		log.Fatal(err)
 	}
 
-	//
-	fmt.Println(cfg.Addr)
 	os.Setenv("KOLIDE_MYSQL_ADDRESS", cfg.Addr)
 	os.Setenv("KOLIDE_MYSQL_PASSWORD", cfg.Passwd)
 	os.Setenv("KOLIDE_MYSQL_USERNAME", cfg.User)
@@ -64,12 +62,10 @@ func Exec() {
 	os.Setenv("KOLIDE_SERVER_TLS", "false")
 
 	prepareCmd := exec.Command(cmd, "prepare", "db")
-	fmt.Println(prepareCmd)
-	output, err := prepareCmd.CombinedOutput()
+	_, err = prepareCmd.CombinedOutput()
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 	}
-	fmt.Println(string(output))
 
 	args := []string{"kolide", "serve"}
 	if err := syscall.Exec(cmd, args, os.Environ()); err != nil {
