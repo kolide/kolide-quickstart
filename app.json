@@ -1,0 +1,13 @@
+{
+  "name": "Kolide",
+  "description": "Run Kolide on Heroku",
+  "keywords": [
+    "kolide",
+    "go",
+    "osquery"
+  ],
+  "image": "heroku/go:1.8",
+  "mount_dir": "src/github.com/kolide/kolide-quickstart",
+  "website": "http://kolide.co",
+  "repository": "http://github.com/kolide/kolide-quickstart"
+}

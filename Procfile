@@ -1,0 +1,1 @@
+web: kolide-quickstart
