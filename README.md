@@ -1,3 +1,4 @@
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/groob/kolide-quickstart/tree/heroku)
 # Kolide Quickstart Demo
 
 The scripts and config files in this repository will enable you to quickly get a demo Kolide installation up and running. If you would like to try Kolide without setting up a production testing environment, this demo is for you. For guidance on installing a production Kolide environment, please see the [infrastructure documentation](https://docs.kolide.co/kolide/current/infrastructure/index.html).
