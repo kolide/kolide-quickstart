@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
@@ -47,6 +48,11 @@ func setEnv() error {
 		return errors.New("required env variable REDIS_URL not set")
 	}
 
+	rc, err := parseRedisURL(redisURL)
+	if err != nil {
+		return fmt.Errorf("parsing redis url %s:", err)
+	}
+
 	cfg, err := parseDSN(dsn)
 	if err != nil {
 		return fmt.Errorf("parsing dsn: %s", err)
@@ -56,7 +62,8 @@ func setEnv() error {
 	os.Setenv("KOLIDE_MYSQL_PASSWORD", cfg.Passwd)
 	os.Setenv("KOLIDE_MYSQL_USERNAME", cfg.User)
 	os.Setenv("KOLIDE_MYSQL_DATABASE", cfg.DBName)
-	os.Setenv("KOLIDE_REDIS_ADDRESS", redisURL)
+	os.Setenv("KOLIDE_REDIS_ADDRESS", rc.addr)
+	os.Setenv("KOLIDE_REDIS_PASSWORD", rc.password)
 	os.Setenv("KOLIDE_SERVER_ADDRESS", "0.0.0.0:"+port)
 	os.Setenv("KOLIDE_SERVER_TLS", "false")
 	return nil
@@ -104,6 +111,24 @@ func execBin() error {
 	}
 
 	return nil
+}
+
+type redisConn struct {
+	addr     string
+	password string
+}
+
+func parseRedisURL(redisURL string) (*redisConn, error) {
+	ur, err := url.Parse(redisURL)
+	if err != nil {
+		return nil, fmt.Errorf("parsing redis URL %s", err)
+	}
+	password, _ := ur.User.Password()
+	conn := &redisConn{
+		addr:     ur.Host,
+		password: password,
+	}
+	return conn, nil
 }
 
 func download() error {
