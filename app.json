@@ -1,0 +1,20 @@
+{
+  "name": "Kolide",
+  "description": "Run Kolide on Heroku",
+  "keywords": [
+    "kolide",
+    "go",
+    "osquery"
+  ],
+  "website": "http://kolide.co",
+  "repository": "http://github.com/kolide/kolide-quickstart",
+  "buildpacks": [
+	{
+	  "url": "heroku/go"
+	}
+  ],
+  "addons": [
+	"jawsdb",
+	"heroku-redis"
+  ]
+}
