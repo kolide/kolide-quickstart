@@ -27,7 +27,7 @@ services:
 
   kolide:
     image: kolide/kolide:latest
-    command: sh -c "./kolide prepare db --config=/tmp/kolide.yml && ./kolide serve --config=/tmp/kolide.yml"
+    command: sh -c "echo '\n' | ./kolide prepare db --config=/tmp/kolide.yml && ./kolide serve --config=/tmp/kolide.yml"
     depends_on:
       - mysql
       - mailhog
