@@ -96,7 +96,7 @@ func execBin() error {
 	}
 
 	// run migrations
-	prepareCmd := exec.Command(cmd, "prepare", "db")
+	prepareCmd := exec.Command(cmd, "prepare", "db", "--no-prompt")
 	_, err = prepareCmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("run prepare db %s", err)
