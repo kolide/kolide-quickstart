@@ -14,7 +14,7 @@ If you would like to contribute to the script, you can open an [Issue](https://g
 
 -  Bash compatible shell with standard unix commands
 -  Git, or a way to download and unzip these scripts
--  [Docker](https://docs.docker.com/engine/installation/)
+-  [Docker](https://docs.docker.com/engine/installation/) and [Docker Compose](https://docs.docker.com/compose/install/) (installed by default with Docker on Mac and Windows)
 
 All other necessary dependencies will be installed via Docker by the scripts in this repository.
 
