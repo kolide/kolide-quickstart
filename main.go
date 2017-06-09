@@ -3,6 +3,8 @@ package main
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -58,6 +60,11 @@ func setEnv() error {
 		return fmt.Errorf("parsing dsn: %s", err)
 	}
 
+	jwtKey, err := randomText(24)
+	if err != nil {
+		return fmt.Errorf("generating jwt key: %s", err)
+	}
+
 	os.Setenv("KOLIDE_MYSQL_ADDRESS", cfg.Addr)
 	os.Setenv("KOLIDE_MYSQL_PASSWORD", cfg.Passwd)
 	os.Setenv("KOLIDE_MYSQL_USERNAME", cfg.User)
@@ -66,6 +73,7 @@ func setEnv() error {
 	os.Setenv("KOLIDE_REDIS_PASSWORD", rc.password)
 	os.Setenv("KOLIDE_SERVER_ADDRESS", "0.0.0.0:"+port)
 	os.Setenv("KOLIDE_SERVER_TLS", "false")
+	os.Setenv("KOLIDE_AUTH_JWT_KEY", jwtKey)
 	return nil
 }
 
@@ -174,4 +182,14 @@ func download() error {
 	}
 
 	return nil
+}
+
+func randomText(keySize int) (string, error) {
+	key := make([]byte, keySize)
+	_, err := rand.Read(key)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(key), nil
 }

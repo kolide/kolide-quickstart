@@ -22,6 +22,33 @@ function initialize_data() {
     chmod -R 777 mysqldata/
 }
 
+# Generate a base64 encoded random string with length provided in $1
+function generate_random() {
+    docker run --rm --entrypoint sh kolide/openssl -c "cat /dev/random | base64 | head -c $1"
+}
+
+function write_config_file() {
+    JWT_KEY=$1
+
+    cat <<EOF > kolide.yml
+mysql:
+  address: mysql:3306
+  database: kolide
+  username: kolide
+  password: kolide
+redis:
+  address: redis:6379
+server:
+  address: 0.0.0.0:8412
+  cert: /tmp/server.crt
+  key: /tmp/server.key
+auth:
+  jwt_key: ${JWT_KEY}
+logging:
+  json: true
+EOF
+}
+
 function mac_enrollment_package() {
     PKGNAME=kolide-enroll
     PKGVERSION=1.0.0
@@ -136,9 +163,9 @@ function get_cn() {
 }
 
 function upload_license() {
-    license=$1
+    LICENSE=$1
     out=$(docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k https://kolide:8412/api/v1/license --data \
-           "{\"license\":\"$license\"}")
+           "{\"license\":\"$LICENSE\"}")
     if echo $out | grep -i error; then
         echo "Error: License upload failed: $out. Exiting." >&2
         exit 1
@@ -164,7 +191,7 @@ function get_enroll_secret() {
 }
 
 function wait_kolide() {
-    echo 'Waiting for Kolide server to accept connections...\c'
+    printf 'Waiting for Kolide server to accept connections...'
     for i in $(seq 1 50);
     do
         docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k -I https://kolide:8412 > /dev/null
@@ -172,14 +199,14 @@ function wait_kolide() {
             echo
             return
         fi
-        echo '.\c'
+        printf '.'
     done
     echo "Error: Kolide failed to start up. Exiting." >&2
     exit 1
 }
 
 function wait_mysql() {
-    echo 'Waiting for MySQL to accept connections...\c'
+    printf 'Waiting for MySQL to accept connections...'
 
     for i in $(seq 1 50);
     do
@@ -188,7 +215,7 @@ function wait_mysql() {
             echo
             return
         fi
-        echo '.\c'
+        printf '.'
     done
 
     echo "Error: MySQL failed to start up. Exiting." >&2
@@ -226,6 +253,12 @@ function up() {
         CN=$(get_cn)
     fi
 
+    # Initialize a config with JWT key if it has not yet been created
+    if [ ! -f kolide.yml ]; then
+        JWT_KEY=$(generate_random 24)
+        write_config_file $JWT_KEY
+    fi
+
     KOLIDE_HOST_HOSTNAME=unused \
         KOLIDE_HOST_IP=unused \
         docker-compose up -d kolide
@@ -236,13 +269,18 @@ function up() {
     if [ "$1" == "simple" ]; then
         echo "Finalizing Kolide setup..."
         upload_license $2
+
         perform_setup
-        echo "Setup complete. Please log in with username 'admin', password 'admin123#'"
+        echo "######################################################################"
+        echo "# Setup complete. Please log in with username 'admin', password 'admin123#'"
+    else
+        echo "######################################################################"
     fi
 
-    echo "Kolide server should now be accessible at https://127.0.0.1:8412 or https://${CN}:8412."
-    echo "Note that a self-signed SSL certificate will generate a warning in the browser."
-    echo "To allow other hosts to enroll, you may want to create a DNS entry mapping $CN to the IP of this host."
+    echo "# Kolide server should now be accessible at https://127.0.0.1:8412 or https://${CN}:8412."
+    echo "# Note that a self-signed SSL certificate will generate a warning in the browser."
+    echo "# To allow other hosts to enroll, you may want to create a DNS entry mapping $CN to the IP of this host."
+    echo "######################################################################"
 }
 
 function down() {
@@ -268,7 +306,7 @@ function reset() {
 }
 
 function usage() {
-    echo "usage: ./demo.sh <subcommand>\n"
+    echo "usage: ./demo.sh <subcommand>"
     echo "subcommands:"
     echo "    up simple <your license string>"
     echo "         Start the demo Kolide instance and dependencies, generating"
