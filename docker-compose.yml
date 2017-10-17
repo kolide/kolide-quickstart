@@ -25,9 +25,9 @@ services:
     expose:
       - "6379"
 
-  kolide:
-    image: kolide/kolide:latest
-    command: sh -c "echo '\n' | ./kolide prepare db --config=/tmp/kolide.yml && ./kolide serve --config=/tmp/kolide.yml"
+  fleet:
+    image: kolide/fleet:latest
+    command: sh -c "echo '\n' | /usr/bin/fleet prepare db --config=/tmp/kolide.yml && /usr/bin/fleet serve --config=/tmp/kolide.yml"
     depends_on:
       - mysql
       - mailhog
