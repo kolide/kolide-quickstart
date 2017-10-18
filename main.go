@@ -98,7 +98,7 @@ func parseDSN(dsn string) (*mysql.Config, error) {
 }
 
 func execBin() error {
-	cmd, err := exec.LookPath("bin/kolide")
+	cmd, err := exec.LookPath("bin/fleet")
 	if err != nil {
 		return fmt.Errorf("looking up kolide path: %s", err)
 	}
@@ -140,9 +140,9 @@ func parseRedisURL(redisURL string) (*redisConn, error) {
 }
 
 func download() error {
-	resp, err := http.Get("http://dl.kolide.co/bin/kolide_latest.zip")
+	resp, err := http.Get("https://dl.kolide.co/bin/fleet_latest.zip")
 	if err != nil {
-		return fmt.Errorf("get latest kolide zip: %s", err)
+		return fmt.Errorf("get latest fleet zip: %s", err)
 	}
 	defer resp.Body.Close()
 
@@ -158,16 +158,16 @@ func download() error {
 	}
 
 	// create bin/kolide file with the executable flag.
-	out, err := os.OpenFile("bin/kolide", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	out, err := os.OpenFile("bin/fleet", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
-		return fmt.Errorf("create bin/kolide file: %s", err)
+		return fmt.Errorf("create bin/fleet file: %s", err)
 	}
 	defer out.Close()
 
 	// extract the linux binary from the zip and copy it to
 	// bin/kolide
 	for _, f := range zr.File {
-		if f.Name != "linux/kolide_linux_amd64" {
+		if f.Name != "linux/fleet_linux_amd64" {
 			continue
 		}
 		src, err := f.Open()
