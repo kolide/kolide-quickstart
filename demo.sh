@@ -151,7 +151,7 @@ cat <<- EOF > docker_hosts/kolide.flags
 --logger_tls_period=10
 EOF
 
-    kolide_container_ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(compose_basename)_kolide_1)"
+kolide_container_ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(compose_basename)_fleet_1)"
 
     KOLIDE_HOST_HOSTNAME="${CN}" \
         KOLIDE_HOST_IP="$kolide_container_ip" \
@@ -162,21 +162,11 @@ function get_cn() {
     docker run --rm -v $(pwd):/certs kolide/openssl x509 -noout -subject -in /certs/server.crt | sed -e 's/^subject.*CN=\([a-zA-Z0-9\.\-]*\).*$/\1/'
 }
 
-function upload_license() {
-    LICENSE=$1
-    out=$(docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k https://kolide:8412/api/v1/license --data \
-           "{\"license\":\"$LICENSE\"}")
-    if echo $out | grep -i error; then
-        echo "Error: License upload failed: $out. Exiting." >&2
-        exit 1
-    fi
-}
-
 function perform_setup() {
     out=$(docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k https://kolide:8412/api/v1/setup --data \
            '{"kolide_server_url":"https://kolide:8412","org_info":{"org_name":"KolideQuick"},"admin":{"admin":true,"email":"quickstart@kolide.com","password":"admin123#","password_confirmation":"admin123#","username":"admin"}}')
     if echo $out | grep -i error; then
-        echo "Error: License upload failed: $out. Exiting." >&2
+        echo "Error: Config upload failed: $out. Exiting." >&2
         exit 1
     fi
 }
@@ -190,11 +180,11 @@ function get_enroll_secret() {
     echo $enroll_secret
 }
 
-function wait_kolide() {
-    printf 'Waiting for Kolide server to accept connections...'
+function wait_fleet() {
+    printf 'Waiting for Fleet server to accept connections...'
     for i in $(seq 1 50);
     do
-        docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k -I https://kolide:8412 > /dev/null
+        docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k -I https://fleet:8412 > /dev/null
         if [ $? -eq 0 ]; then
             echo
             return
@@ -261,14 +251,13 @@ function up() {
 
     KOLIDE_HOST_HOSTNAME=unused \
         KOLIDE_HOST_IP=unused \
-        docker-compose up -d kolide
+        docker-compose up --remove-orphans -d fleet
 
     wait_mysql
-    wait_kolide
+    wait_fleet
 
     if [ "$1" == "simple" ]; then
         echo "Finalizing Kolide setup..."
-        upload_license $2
 
         perform_setup
         echo "######################################################################"
@@ -308,7 +297,7 @@ function reset() {
 function usage() {
     echo "usage: ./demo.sh <subcommand>"
     echo "subcommands:"
-    echo "    up simple <your license string>"
+    echo "    up simple"
     echo "         Start the demo Kolide instance and dependencies, generating"
     echo "         self-signed certs and automating the entire setup process."
     echo "    up"
@@ -327,7 +316,7 @@ function usage() {
     echo "        Enroll demo osqueryd linux hosts."
 }
 
-docker pull kolide/kolide
+docker pull kolide/fleet
 docker pull kolide/openssl
 
 case $1 in
