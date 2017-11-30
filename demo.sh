@@ -30,7 +30,7 @@ function generate_random() {
 function write_config_file() {
     JWT_KEY=$1
 
-    cat <<EOF > kolide.yml
+    cat <<EOF > fleet.yml
 mysql:
   address: mysql:3306
   database: kolide
@@ -163,7 +163,7 @@ function get_cn() {
 }
 
 function docker_curl() {
-    docker run --rm -it --network=$(compose_network) -v $(pwd):/src --entrypoint curl kolide/openssl -k "$@"
+    docker run --rm -it --network=$(compose_network) -v $(pwd):/src --entrypoint curl kolide/openssl --cacert /src/server.crt "$@"
 }
 
 function perform_setup() {
@@ -255,7 +255,7 @@ function up() {
 
     # create a self signed cert if the user has not provided one.
     if [ ! -f server.key ]; then
-        DEFAULT_CN='kolide'
+        DEFAULT_CN='fleet'
         if [ "$1" != "simple" ]; then
             read -p "Enter CN for self-signed SSL certificate [default '$DEFAULT_CN']: " CN
         fi
@@ -272,7 +272,7 @@ function up() {
     fi
 
     # Initialize a config with JWT key if it has not yet been created
-    if [ ! -f kolide.yml ]; then
+    if [ ! -f fleet.yml ]; then
         JWT_KEY=$(generate_random 24)
         write_config_file $JWT_KEY
     fi

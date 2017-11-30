@@ -7,4 +7,4 @@ docker_hosts
 osquery_status
 osquery_result
 mysqldata/
-kolide.yml
+fleet.yml

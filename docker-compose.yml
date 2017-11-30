@@ -27,7 +27,7 @@ services:
 
   fleet:
     image: kolide/fleet:latest
-    command: sh -c "echo '\n' | /usr/bin/fleet prepare db --config=/tmp/kolide.yml && /usr/bin/fleet serve --config=/tmp/kolide.yml"
+    command: sh -c "echo '\n' | /usr/bin/fleet prepare db --config=/tmp/fleet.yml && /usr/bin/fleet serve --config=/tmp/fleet.yml"
     depends_on:
       - mysql
       - mailhog

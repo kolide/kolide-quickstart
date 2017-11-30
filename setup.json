@@ -1,5 +1,5 @@
 {
-  "kolide_server_url": "https://kolide:8412",
+  "kolide_server_url": "https://fleet:8412",
   "org_info": {
     "org_name": "KolideQuick"
   },
