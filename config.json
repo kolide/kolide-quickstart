@@ -1,0 +1,9 @@
+{
+  "smtp_settings": {
+    "authentication_type": "authtype_none",
+    "enable_ssl_tls": false,
+    "port": 1025,
+    "sender_address": "quickstart@kolide.local",
+    "server": "mailhog"
+  }
+}

@@ -162,11 +162,39 @@ function get_cn() {
     docker run --rm -v $(pwd):/certs kolide/openssl x509 -noout -subject -in /certs/server.crt | sed -e 's/^subject.*CN=\([a-zA-Z0-9\.\-]*\).*$/\1/'
 }
 
+function docker_curl() {
+    docker run --rm -it --network=$(compose_network) -v $(pwd):/src --entrypoint curl kolide/openssl -k "$@"
+}
+
 function perform_setup() {
-    out=$(docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k https://kolidequickstart_fleet_1:8412/api/v1/setup --data \
-           '{"kolide_server_url":"https://kolide:8412","org_info":{"org_name":"KolideQuick"},"admin":{"admin":true,"email":"quickstart@kolide.com","password":"admin123#","password_confirmation":"admin123#","username":"admin"}}')
+    out=$(docker_curl https://fleet:8412/api/v1/setup --data @/src/setup.json)
+
     if echo $out | grep -i error; then
         echo "Error: Config upload failed: $out. Exiting." >&2
+        exit 1
+    fi
+}
+
+function get_login_token() {
+    out=$(docker_curl https://fleet:8412/api/v1/kolide/login -d '{"username": "admin", "password": "admin123#" }')
+
+    if echo $out | grep -i error; then
+        echo "Error: Couldn't login: $out. Exiting." >&2
+        exit 1
+    fi
+    echo "$out" | awk '/token/{print $2}' | tr -d "\n\r\""
+}
+
+function perform_configure() {
+    auth_token="$1"
+    out=$(docker_curl https://fleet:8412/api/v1/kolide/config \
+		      -X "PATCH" \
+		      -H "Content-Type: text/plain; charset=utf-8" \
+		      -H "Authorization: Bearer $auth_token" \
+		      --data @/src/config.json)
+
+    if echo $out | grep -i error; then
+        echo "Error: Couldn't configure: $out. Exiting." >&2
         exit 1
     fi
 }
@@ -184,7 +212,7 @@ function wait_fleet() {
     printf 'Waiting for Fleet server to accept connections...'
     for i in $(seq 1 50);
     do
-        docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k -I https://kolidequickstart_fleet_1:8412 > /dev/null
+        docker_curl -I https://fleet:8412 > /dev/null
         if [ $? -eq 0 ]; then
             echo
             return
@@ -260,6 +288,8 @@ function up() {
         echo "Finalizing Kolide setup..."
 
         perform_setup
+	auth_token=$(get_login_token)
+	perform_configure $auth_token
         echo "######################################################################"
         echo "# Setup complete. Please log in with username 'admin', password 'admin123#'"
     else
