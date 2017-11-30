@@ -163,7 +163,7 @@ function get_cn() {
 }
 
 function perform_setup() {
-    out=$(docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k https://kolide:8412/api/v1/setup --data \
+    out=$(docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k https://kolidequickstart_fleet_1:8412/api/v1/setup --data \
            '{"kolide_server_url":"https://kolide:8412","org_info":{"org_name":"KolideQuick"},"admin":{"admin":true,"email":"quickstart@kolide.com","password":"admin123#","password_confirmation":"admin123#","username":"admin"}}')
     if echo $out | grep -i error; then
         echo "Error: Config upload failed: $out. Exiting." >&2
@@ -184,7 +184,7 @@ function wait_fleet() {
     printf 'Waiting for Fleet server to accept connections...'
     for i in $(seq 1 50);
     do
-        docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k -I https://fleet:8412 > /dev/null
+        docker run --rm -it --network=$(compose_network) --entrypoint curl kolide/openssl -k -I https://kolidequickstart_fleet_1:8412 > /dev/null
         if [ $? -eq 0 ]; then
             echo
             return
