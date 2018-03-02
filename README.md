@@ -4,8 +4,7 @@
 
 The scripts and config files in this repository will enable you to quickly get a demo Kolide Fleet installation up and running. If you would like to try Fleet without setting up a production testing environment, this demo is for you. For guidance on installing a production Fkeet environment, please see the [infrastructure documentation](https://github.com/kolide/fleet/tree/master/docs/infrastructure).
 
-The scripts in the demo assume you already have registered for Kolide. You can sign up for Kolide on our [website](https://kolide.com/).
-We're also available to help with this script, or deploying Kolide in your environment.
+We're available to help with this script, or deploying Kolide in your environment.
 You can contact us by email at support@kolide.co or by joining #kolide on the [osquery slack team](https://osquery-slack.herokuapp.com/).
 
 If you would like to contribute to the script, you can open an [Issue](https://github.com/kolide/kolide-quickstart/issues) or [Pull Request](https://github.com/kolide/kolide-quickstart/pulls).
