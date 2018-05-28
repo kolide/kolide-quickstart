@@ -167,7 +167,7 @@ func download() error {
 	// extract the linux binary from the zip and copy it to
 	// bin/kolide
 	for _, f := range zr.File {
-		if f.Name != "linux/fleet_linux_amd64" {
+		if f.Name != "linux/fleet" {
 			continue
 		}
 		src, err := f.Open()
