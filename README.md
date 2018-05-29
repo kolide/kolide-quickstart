@@ -1,3 +1,7 @@
+This repository was created to demo Kolide Fleet before it was available as an open source tool. Because Fleet is now open source, please refer to [the Fleet docs](https://github.com/kolide/fleet/tree/master/docs) for information on getting started with Fleet.
+
+---
+
 # Kolide Quickstart Demo
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/kolide/kolide-quickstart/tree/master)
