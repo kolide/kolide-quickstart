@@ -1,0 +1,13 @@
+{
+  "kolide_server_url": "https://fleet:8412",
+  "org_info": {
+    "org_name": "KolideQuick"
+  },
+  "admin": {
+    "admin": true,
+    "email": "quickstart@kolide.local",
+    "password": "admin123#",
+    "password_confirmation": "admin123#",
+    "username": "admin"
+  }
+}
